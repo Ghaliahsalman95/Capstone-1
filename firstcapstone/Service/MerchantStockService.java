@@ -19,6 +19,9 @@ public class MerchantStockService {
     private ProductService productService;
 
     public ArrayList<MerchantStock> getMerchantStocks() {
+        for (MerchantStock merchantStock: merchantStocks){
+            if(merchantService.getOne(merchantStock.getMerchantid())==null && productService.getPRoduct(merchantStock.getProductid())==null)
+               merchantStocks.remove(merchantStock); }//filter remove all null productID-merchantID
         return merchantStocks;
     }
 
@@ -115,7 +118,7 @@ public class MerchantStockService {
                     }
 
             }
-        
+
         return nosaleList;
     }
 }
