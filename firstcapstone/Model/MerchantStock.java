@@ -11,9 +11,9 @@ public class MerchantStock {
     @NotNull(message = "Merchant Stock ID  must not be empty")
     private String ID;
     @NotNull(message = "Productid must not be empty")
-    private Product productid;
+    private String productid;
     @NotNull(message = "merchantid must not be empty")
-    private Merchant merchantid;
+    private String merchantid;
     @NotNull(message = "Stock must not be empty ")
     @Positive(message = "Stock must be positive")
     @Min(value = 10,message = "have to be more than 10 at start")

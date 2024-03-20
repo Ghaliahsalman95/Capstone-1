@@ -29,31 +29,31 @@ public class ProductController {
         else  return ResponseEntity.status(HttpStatus.OK).body(productService.getProducts());
     }
 
-    @PostMapping("/add-product/{adminID}/{merchantStockID}/{merchantID}/{categoryID}")
-    public ResponseEntity addproduct(@PathVariable String categoryID,@PathVariable String merchantStockID,@PathVariable String adminID, @RequestBody @Valid Product product, @PathVariable String merchantID, Errors errors){
+    @PostMapping("/add-product/{adminID}/")
+    public ResponseEntity addproduct(@PathVariable String adminID, @RequestBody @Valid Product product, Errors errors){
         if (errors.hasErrors())
             return ResponseEntity.status(400).body(errors.getFieldError().getDefaultMessage());
-        if(productService.addProduct(adminID,product,merchantID,merchantStockID,categoryID))
+        if(productService.addProduct(adminID,product))
         { return ResponseEntity.status(HttpStatus.OK).body(new APIResponse("Product "+product.getID()+" Added successfully"));}
         return ResponseEntity.status(400).body(new APIResponse("Add Product allow for admin user"));
     }
 
-    @PutMapping("/update-product/{productID}/{adminID}/{merchantID}/{merchantStockID}")
-    public ResponseEntity updateproduct(@PathVariable String merchantStockID,@PathVariable String merchantID,@PathVariable String productID,@PathVariable String adminID,@RequestBody@Valid Product product, Errors errors){
+    @PutMapping("/update-product/{productID}/{adminID}")
+    public ResponseEntity updateproduct(@PathVariable String productID,@PathVariable String adminID,@RequestBody@Valid Product product, Errors errors){
         if (errors.hasErrors())
             return ResponseEntity.status(400).body(errors.getFieldError().getDefaultMessage());
-        if(productService.update(adminID,productID,product,merchantID,merchantStockID)==1)
+        if(productService.update(adminID,productID,product)==1)
             return ResponseEntity.status(HttpStatus.OK).body(new APIResponse("Product "+product.getName()+" Updated successfully"));
-        else if(productService.update(adminID,productID,product,merchantID,merchantStockID)==-1)
+        else if(productService.update(adminID,productID,product)==-1)
             return ResponseEntity.status(400).body(new APIResponse("Product ID"+productID+" Not Found"));
         return ResponseEntity.status(400).body(new APIResponse("Update Product allow for admin user"));
     }
 
-    @DeleteMapping("/delete-product/{productID}/{adminID}/{merchantStockID}/{merchantID}")
-    public ResponseEntity deleteProduct(@PathVariable String merchantID,@PathVariable String merchantStockID,@PathVariable String adminID,@PathVariable String productID){
-        if(productService.delete(adminID,productID,merchantStockID,merchantID)==1)
+    @DeleteMapping("/delete-product/{productID}/{adminID}")
+    public ResponseEntity deleteProduct(@PathVariable String adminID,@PathVariable String productID){
+        if(productService.delete(adminID,productID)==1)
             return ResponseEntity.status(HttpStatus.OK).body(new APIResponse("Product "+productID+" Deleted successfully"));
-        else if(productService.delete(adminID,productID,merchantStockID,merchantID)==-1) return ResponseEntity.status(400).body(new APIResponse("Product ID"+productID+" Not Found"));
+        else if(productService.delete(adminID,productID)==-1) return ResponseEntity.status(400).body(new APIResponse("Product ID"+productID+" Not Found"));
         return ResponseEntity.status(400).body(new APIResponse("Deleted Product allow for admin user"));
     }
     @PutMapping("/buy/{customerID}/{productID}/{merchantID}")
@@ -66,10 +66,10 @@ public class ProductController {
         return ResponseEntity.status(400).body(new APIResponse("Not Found MerchantID"));
     }
     //String productID, String merchantID, String merchantStockID, String userID,int stock
-    @PutMapping("/return-product/{productID}/{merchantID}/{merchantStockID}/{userID}/{stock}")
-    public ResponseEntity returnProduct(@PathVariable String productID,@PathVariable String merchantID,@PathVariable String merchantStockID,@PathVariable String userID,@PathVariable int stock){
+    @PutMapping("/return-product/{productID}/{userID}/{stock}")
+    public ResponseEntity returnProduct(@PathVariable String productID,@PathVariable String userID,@PathVariable int stock){
 
-        if (productService.productRetrn(productID,merchantID,merchantStockID,userID,stock))
+        if (productService.productRetrn(productID,userID,stock))
         {return ResponseEntity.status(HttpStatus.OK).body(new APIResponse("The Product "+productID+" was successfully returned by the customer "+userID+" with stock "+stock));}
 
         return ResponseEntity.status(400).body(new APIResponse("User ID"+userID+" Not found"));

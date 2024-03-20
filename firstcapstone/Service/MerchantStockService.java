@@ -23,15 +23,22 @@ public class MerchantStockService {
     }
 
     public boolean addMerchantStock(MerchantStock merchantStock) {
-
-            merchantStocks.add(merchantStock);return true;}
+        if (productService.getPRoduct(merchantStock.getProductid()) != null && merchantService.getOne(merchantStock.getMerchantid()) != null) {
+            merchantStocks.add(merchantStock);
+            return true;
+        }
+        return false;
+    }
 
     public boolean update(String ID, MerchantStock merchantStock) {
         for (int i = 0; i < merchantStocks.size(); i++) {
             if (merchantStocks.get(i).getID().equalsIgnoreCase(ID)) {
-                merchantStocks.set(i, merchantStock);
-                return true;
+                if (productService.getPRoduct(merchantStock.getProductid()) != null && merchantService.getOne(merchantStock.getMerchantid()) != null) {
+                    merchantStocks.set(i, merchantStock);
+                    return true;
+                }
             }
+            return false;
         }
         return false;
     }
@@ -49,58 +56,67 @@ public class MerchantStockService {
 
     public boolean addStocks(int stocks, String productID, String merchantID) {
         for (MerchantStock merchantStock : merchantStocks) {
-            if (merchantStock.getMerchantid().getID().equalsIgnoreCase(merchantID)&&merchantStock.getProductid().getID().equalsIgnoreCase(productID)) {
-                    merchantStock.setStock(merchantStock.getStock() + stocks);
-                    return true;
-                }
-            }return false;
+            if (merchantStock.getMerchantid().equalsIgnoreCase(merchantID) && merchantStock.getProductid().equalsIgnoreCase(productID)) {
+                merchantStock.setStock(merchantStock.getStock() + stocks);
+                return true;
+            }
+        }
+        return false;
 
 
     }
 
     //
     public boolean isOwner(String merchantID, String productID) {
-     for(MerchantStock merchantStock:merchantStocks){
-            if (merchantStock.getMerchantid().getID().equalsIgnoreCase(merchantID) && merchantStock.getProductid().getID().equalsIgnoreCase(productID))
-            {return true;}
+        for (MerchantStock merchantStock : merchantStocks) {
+            if (merchantStock.getMerchantid().equalsIgnoreCase(merchantID) && merchantStock.getProductid().equalsIgnoreCase(productID)) {
+                return true;
+            }
         }
         return false;
     }
-    public MerchantStock getMerchantstock(String id){
-        for (MerchantStock merchantStock:merchantStocks){
-            if(merchantStock.getID().equalsIgnoreCase(id))
+
+    public MerchantStock getMerchantstock(String id) {
+        for (MerchantStock merchantStock : merchantStocks) {
+            if (merchantStock.getID().equalsIgnoreCase(id))
                 return merchantStock;
-        }return null;
+        }
+        return null;
     }
 /////////////////////////////////4-Extra Out of stock
 
-    public ArrayList<MerchantStock>getOutOfStock(String proID){
-        ArrayList<MerchantStock>outStock=new ArrayList<>();
-        for (MerchantStock merchantStock:merchantStocks){
-            if (merchantStock.getProductid().getID().equalsIgnoreCase(proID)&&merchantStock.getStock()==0)
+    public ArrayList<MerchantStock> getOutOfStock(String proID) {
+        ArrayList<MerchantStock> outStock = new ArrayList<>();
+        for (MerchantStock merchantStock : merchantStocks) {
+            if (merchantStock.getProductid().equalsIgnoreCase(proID) && merchantStock.getStock() == 0)
                 outStock.add(merchantStock);
-        }return outStock;
+        }
+        return outStock;
     }
     /////////////////////////////////5- Extra almost out of stock
 
-    public ArrayList<MerchantStock>almostOutOfStock(String proID){
-        ArrayList<MerchantStock>almostoutStock=new ArrayList<>();
-        for (MerchantStock merchantStock:merchantStocks){
-            if (merchantStock.getProductid().getID().equalsIgnoreCase(proID)&&merchantStock.getStock()>=3)
+    public ArrayList<MerchantStock> almostOutOfStock(String proID) {
+        ArrayList<MerchantStock> almostoutStock = new ArrayList<>();
+        for (MerchantStock merchantStock : merchantStocks) {
+            if (merchantStock.getProductid().equalsIgnoreCase(proID) && merchantStock.getStock() >= 3)
                 almostoutStock.add(merchantStock);
-        }return almostoutStock;
+        }
+        return almostoutStock;
     }
 
     /////////////
 
-    public ArrayList<MerchantStock> nosale(String merchantID){
-        ArrayList<MerchantStock>nosaleList=new ArrayList<>();
-        for (MerchantStock merchantStock:merchantStocks){
-                if (merchantStock.getMerchantid().getID().equalsIgnoreCase(merchantID)){
-                        if (merchantStock.getProductid().getSales()==0){
-                                nosaleList.add(merchantStock);
-                            }
-                        }
+    public ArrayList<MerchantStock> nosale(String merchantID) {
+        ArrayList<MerchantStock> nosaleList = new ArrayList<>();
+        for (MerchantStock merchantStock : merchantStocks) {
+            if (merchantStock.getMerchantid().equalsIgnoreCase(merchantID)) {
+                for (Product product : productService.products) {
+                    if (productService.getPRoduct(merchantStock.getProductid()).getSales()==0)
+                        nosaleList.add(merchantStock);
                     }
-    return nosaleList;}
+
+            }
+        }
+        return nosaleList;
+    }
 }

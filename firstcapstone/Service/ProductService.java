@@ -20,44 +20,35 @@ public class ProductService {
     private UserService userService;
     @Autowired
     private MerchantStockService merchantStockService;
-@Autowired
-    private  CategoryService categoryService;
+    @Autowired
+    private CategoryService categoryService;
 
     public ArrayList<Product> getProducts() {
         return products;
     }
 
-    public boolean addProduct(String admin, Product product, String merchantID, String merchantStockID, String categoryID) {
+    public boolean addProduct(String admin, Product product) {
         if (userService.IsAdmin(admin)) {
 
-            if (merchantStockService.getMerchantstock(merchantStockID).getMerchantid().getID().equalsIgnoreCase(merchantID)) {
-                if (categoryService.getOneCat(categoryID).getID().equalsIgnoreCase(categoryID)) {
-                    products.add(product);
-                    merchantStockService.getMerchantstock(merchantStockID).setProductid(product);
-                    return true;
-//                        MerchantStock merchantStock = new MerchantStock(merchantStockID, product, merchantService.getOne(merchantID), merchantStockService.getMerchantstock(merchantStockID).getStock());
-//                        merchantStockService.update(merchantStockService.getMerchantstock(merchantStockID).getID(), merchantStock);
-
-
-                }
+            if (categoryService.getOneCat(product.getCategoryID()) != null) {
+                products.add(product);
+                return true;
+//
             }
             return false;
-
         }
         return false;
     }
 
-    public int update(String admin, String productID, Product product, String merchantID, String merchantStockID) {
-        if (userService.IsAdmin(admin)) {
-            if (merchantStockService.isOwner(merchantID, productID)) {
-                for (int i = 0; i < products.size(); i++) {
-                    if (products.get(i).getID().equalsIgnoreCase(productID)) {
-                        MerchantStock merchantStock = merchantStockService.getMerchantstock(merchantStockID);
-                        products.set(i, product);
-                        merchantStock.setProductid(product);//updated in merchantstock
-                        return 1;
-                    }
+    public int update(String admin, String productID, Product product) {
+        if (userService.IsAdmin(admin)&&categoryService.getOneCat(product.getCategoryID())!=null) {
+
+            for (int i = 0; i < products.size(); i++) {
+                if (products.get(i).getID().equalsIgnoreCase(productID)) {
+                    products.set(i, product);
+                    return 1;
                 }
+
                 return -1;
             }
             return -2;
@@ -65,12 +56,10 @@ public class ProductService {
         return 0;
     }
 
-    public int delete(String Admin, String proID, String merchantStockID, String merchantID) {
-        if (userService.IsAdmin(Admin) && merchantStockService.isOwner(merchantID, proID)) {
+    public int delete(String Admin, String proID) {
+        if (userService.IsAdmin(Admin)) {
             for (Product product : products) {
                 if (product.getID().equalsIgnoreCase(proID)) {
-                    MerchantStock merchantStock = merchantStockService.getMerchantstock(merchantStockID);
-                    merchantStock.setProductid(null);//to delete it from merchantstock;
                     products.remove(product);
                     return 1;
                 }
@@ -85,13 +74,13 @@ public class ProductService {
     public int buyProduct(String userid, String productid, String merchantid) {
         if (!userService.IsAdmin(userid)) {
             for (MerchantStock merchantStock : merchantStockService.getMerchantStocks()) {
-                if (merchantStock.getMerchantid().getID().equalsIgnoreCase(merchantid) &&
-                        merchantStock.getProductid().getID().equalsIgnoreCase(productid)) {
+                if (merchantStock.getMerchantid().equalsIgnoreCase(merchantid) &&
+                        merchantStock.getProductid().equalsIgnoreCase(productid)) {
                     if (merchantStock.getStock() > 0) {
-                        if (userService.getUser(userid).getBalance() > merchantStock.getProductid().getPrice()) {
+                        if (userService.getUser(userid).getBalance() > getPRoduct(productid).getPrice()) {
                             merchantStock.setStock(merchantStock.getStock() - 1);
                             userService.getUser(userid).
-                                    setBalance(userService.getUser(userid).getBalance() - merchantStock.getProductid().getPrice());
+                                    setBalance(userService.getUser(userid).getBalance() - getPRoduct(productid).getPrice());
                             Product product = getPRoduct(productid);
                             product.setSales(getPRoduct(productid).getSales() + 1);//for extra credit TOP SALE;
                             return 1;
@@ -136,46 +125,48 @@ public class ProductService {
     }
 
     //2-Extra return Product stock
-    public boolean productRetrn(String productID, String merchantID, String merchantStockID, String userID, int stock) {
+    public boolean productRetrn(String productID, String userID, int stock) {
         if (!userService.IsAdmin(userID)) {//id for customer
-            if (merchantStockService.getMerchantstock(merchantStockID)
-                    .getMerchantid().getID().equalsIgnoreCase(merchantID)
-                    && merchantStockService.
-                    getMerchantstock(merchantStockID).getProductid().getID().equalsIgnoreCase(productID)) {
-///////////////////////////////////////finish check
-                User user = userService.getUser(userID);
-                user.setBalance(user.getBalance() + getPRoduct(productID).getPrice());// return money
-                merchantStockService.addStocks(stock,productID,merchantID);
-                Product product=getPRoduct(productID);
-                int sale=product.getSales()-stock;
-                product.setSales(sale);
-                for (int i=0;i<products.size();i++){
-                    if (product.getID().equalsIgnoreCase(products.get(i).getID())){
-                        products.set(i,product);}}
-                merchantStockService.getMerchantstock(merchantStockID).setProductid(product);
-               // merchantStockService.getMerchantstock(merchantStockID).setStock(merchantStockService.getMerchantstock(merchantStockID)
-                // .getStock() + stock);//update
-                return true;}
-            return false;}
+//
+            for(int i=0; i<merchantStockService.merchantStocks.size();i++){
+            User user = userService.getUser(userID);
+            user.setBalance(user.getBalance() + getPRoduct(productID).getPrice());// return money
+                if(merchantStockService.merchantStocks.get(i).getProductid().equalsIgnoreCase(productID)){
+                    MerchantStock merchantStock1=new MerchantStock(merchantStockService.merchantStocks.get(i).getID(),productID,merchantStockService.merchantStocks.get(i).getMerchantid(),merchantStockService.merchantStocks.get(i).getStock()+stock);
+                    merchantStockService.merchantStocks.set(i,merchantStock1);
+                }
+            Product product = getPRoduct(productID);
+            int sale = product.getSales() - stock;
+            product.setSales(sale);
+            for (int ii = 0; ii < products.size(); ii++) {
+                if (product.getID().equalsIgnoreCase(products.get(ii).getID())) {
+                    products.set(ii, product);
+                }
+            }
+
+
+            return true;
+        }
         return false;
     }
-
+        return false;
+}
 
 
 ////////////////////////////
 
-    //-------------------------3 extra credit Filter ---------------
-    public ArrayList<Product> filter(String category) {
-        ArrayList<Product> filterList = new ArrayList<>();
-        for (Product product : products) {
-            if (product.getCategoryID().equalsIgnoreCase(category))
-                filterList.add(product);
-        }
-        return filterList;
+//-------------------------3 extra credit Filter ---------------
+public ArrayList<Product> filter(String category) {
+    ArrayList<Product> filterList = new ArrayList<>();
+    for (Product product : products) {
+        if (product.getCategoryID().equalsIgnoreCase(category))
+            filterList.add(product);
     }
+    return filterList;
+}
 
 
-    /////////////////
+/////////////////
 
 
 }
