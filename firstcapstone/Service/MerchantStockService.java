@@ -110,13 +110,12 @@ public class MerchantStockService {
         ArrayList<MerchantStock> nosaleList = new ArrayList<>();
         for (MerchantStock merchantStock : merchantStocks) {
             if (merchantStock.getMerchantid().equalsIgnoreCase(merchantID)) {
-                for (Product product : productService.products) {
                     if (productService.getPRoduct(merchantStock.getProductid()).getSales()==0)
                         nosaleList.add(merchantStock);
                     }
 
             }
-        }
+        
         return nosaleList;
     }
 }
